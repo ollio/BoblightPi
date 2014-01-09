@@ -1,6 +1,6 @@
 app:
-    name: BoblightServer
-    description: Java implementation of the boblight server with enhanced functionality.
+    name: BoblightPi
+    description: Java implementation of the boblight server with enhanced functionality. The target plattform is the RaspiPi.
 
 boblight:
     port: 19333
