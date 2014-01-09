@@ -1,0 +1,49 @@
+buildscript {
+    repositories {
+        maven { url "http://repo.spring.io/libs-snapshot" }
+        maven { url "http://oss.sonatype.org/content/groups/public" }
+        mavenLocal()
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:0.5.0.M6")
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'spring-boot'
+
+jar {
+    baseName = 'BoblightServer'
+    version =  '1.0'
+}
+
+repositories {
+    mavenCentral()
+    maven { url "http://repo.spring.io/libs-snapshot" }
+}
+
+dependencies {
+    compile("org.springframework.boot:spring-boot-starter-web:0.5.0.M6") {
+        exclude module: "spring-boot-starter-tomcat"
+    }
+    compile("org.springframework.boot:spring-boot-starter-jetty:0.5.0.M6")
+    compile("org.springframework.boot:spring-boot-starter-actuator:0.5.0.M6")
+    compile("org.springframework.boot:spring-boot-starter-integration:0.5.0.M6")
+    compile('javax.inject:javax.inject:1')
+    compile('org.yaml:snakeyaml:1.13')
+    compile('commons-lang:commons-lang:2.6')
+    compile('com.google.guava:guava:15.0')
+    compile('com.pi4j:pi4j-core:0.0.5')
+    compile files('libs/jssc.jar')
+
+    testCompile('org.testng:testng:5.14.2')
+    testCompile('org.easytesting:fest-assert:1.4')
+    testCompile('org.mockito:mockito-all:1.8.4')
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '1.10'
+}

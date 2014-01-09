@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:int="http://www.springframework.org/schema/integration"
+       xmlns:int-ip="http://www.springframework.org/schema/integration/ip"
+       xsi:schemaLocation="http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
+                http://www.springframework.org/schema/integration/ip http://www.springframework.org/schema/integration/ip/spring-integration-ip.xsd
+                http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <int-ip:tcp-connection-factory id="server"
+                                   type="server" port="${boblight.port}"
+                                   using-nio="true"
+                                   deserializer="serializer"
+                                   serializer="serializer"/>
+
+    <!--<bean id="serializer" class="org.springframework.integration.ip.tcp.serializer.ByteArrayLfSerializer"/>-->
+    <bean id="serializer" class="org.bozan.boblight.endpoint.serialization.MessageSerializer"/>
+
+    <int-ip:tcp-inbound-gateway id="inGateway"
+                                request-channel="input"
+                                reply-channel="output"
+                                error-channel="errorChannel"
+                                connection-factory="server"
+                                reply-timeout="10000"/>
+
+    <int:channel id="input"/>
+
+    <int:service-activator input-channel="input" ref="boblightEndpoint" output-channel="output"/>
+
+    <int:channel id="output"/>
+
+</beans>
