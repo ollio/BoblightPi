@@ -34,6 +34,7 @@ public class IODeviceFactory {
       case "i2c" :
         device = ioDeviceI2C;
         break;
+      case "console" :
       case "log" :
         device = ioDeviceLogger;
         break;

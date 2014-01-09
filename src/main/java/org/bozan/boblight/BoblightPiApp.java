@@ -13,11 +13,7 @@ import org.springframework.context.annotation.ImportResource;
 @ImportResource("integration-context.xml")
 public class BoblightPiApp {
 
-
-
     public static void main(String[] args) {
         ApplicationContext ctx = SpringApplication.run(BoblightPiApp.class, args);
-
-
     }
 }
