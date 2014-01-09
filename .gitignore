@@ -4,3 +4,15 @@
 *.jar
 *.war
 *.ear
+
+# Env Files #
+*.iml
+
+# Folders #
+out/
+build/
+
+# Hidden Files #
+.gradle
+.idea
+.boblight
