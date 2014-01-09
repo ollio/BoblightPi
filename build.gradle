@@ -30,7 +30,7 @@ dependencies {
         exclude module: "spring-boot-starter-tomcat"
     }
     compile("org.springframework.boot:spring-boot-starter-jetty:0.5.0.M6")
-    compile("org.springframework.boot:spring-boot-starter-actuator:0.5.0.M6")
+//    compile("org.springframework.boot:spring-boot-starter-actuator:0.5.0.M6")
     compile("org.springframework.boot:spring-boot-starter-integration:0.5.0.M6")
     compile('javax.inject:javax.inject:1')
     compile('org.yaml:snakeyaml:1.13')

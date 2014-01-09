@@ -25,8 +25,13 @@ public class IODeviceFactory {
   @Inject
   IODeviceI2C ioDeviceI2C;
 
+  private IODeviceAbstract device;
+
   public IODevice getIODevice() throws IOException {
-    IODeviceAbstract device;
+    if(device != null) {
+      return device;
+    }
+
     switch (defaultString(lowerCase(configuration.getDevice().get("type")))) {
       case "serial" :
         device = ioDeviceSerialJSSC;

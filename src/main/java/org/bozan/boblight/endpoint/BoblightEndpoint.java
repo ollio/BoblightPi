@@ -152,7 +152,7 @@ public class BoblightEndpoint {
   public static final String LIGHTS = "lights";
   public static final String LIGHT = "light";
 
-  @Autowired
+  @Inject
   BoblightConfiguration configuration;
 
   @Inject

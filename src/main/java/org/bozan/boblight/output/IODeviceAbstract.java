@@ -13,18 +13,22 @@ abstract class IODeviceAbstract implements IODevice {
   abstract void connect() throws IOException;
 
   @Override
-  public void setLight(int light, int r, int g, int b) {
+  public void setLight(int ledId, int r, int g, int b) {
     int rgb = r;
     rgb <<= 8;
     rgb |= g;
     rgb <<= 8;
     rgb |= b;
+    setLight(ledId, rgb);
+  }
 
-    if(!activeLights.containsKey(light) || activeLights.get(light) != rgb) {
-      activeLights.put(light, rgb);
+  @Override
+  public void setLight(int ledId, int rgb) {
+    if(!activeLights.containsKey(ledId) || activeLights.get(ledId) != rgb) {
+      activeLights.put(ledId, rgb);
       send(ByteBuffer.allocate(4)
           .putInt(rgb)
-          .put(0, (byte)light)
+          .put(0, (byte)ledId)
           .array());
     }
   }
