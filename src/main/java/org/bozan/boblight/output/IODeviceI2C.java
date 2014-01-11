@@ -27,26 +27,26 @@ import static org.apache.commons.lang.math.NumberUtils.toInt;
 public class IODeviceI2C extends IODeviceAbstract {
   private final static Logger LOG = Logger.getLogger(IODeviceI2C.class.getName());
 
-  private I2CDevice device;
+  private I2CBus i2CBus;
+  private int deviceId;
+  private I2CDevice i2CDevice = null;
 
   @Autowired
   BoblightConfiguration configuration;
 
   @Override
   void connect() throws IOException {
-
     int busId = toInt(configuration.getDevice().get("i2cBus"));
     LOG.info("Initialize I2C Bus: " + busId);
-    final I2CBus bus = I2CFactory.getInstance(busId);
+    i2CBus = I2CFactory.getInstance(busId);
 
-    int deviceId = Integer.parseInt(configuration.getDevice().get("i2cDevice"), 16);
+    deviceId = Integer.parseInt(configuration.getDevice().get("i2cDevice"), 16);
     LOG.info(format("Fetching device ID: 0x%02X ", deviceId));
-    device = bus.getDevice(deviceId);
   }
 
   @Scheduled(initialDelay = 1000, fixedRate = 50)
   public void reportCurrentTime() {
-    while (!messageQueue.isEmpty()) {
+    if (!messageQueue.isEmpty()) {
       try {
         int blocks = messageQueue.size();
         blocks = Math.min(blocks, configuration.getMaxBlocks());
@@ -59,15 +59,19 @@ public class IODeviceI2C extends IODeviceAbstract {
         }
 
         logData(buf.array());
-        device.write(buf.array(), 0, buf.array().length);
+        getI2CDevice().write(buf.array(), 0, buf.array().length);
       } catch (IOException e) {
-        LOG.log(Level.SEVERE, "Can't send to I2C port: " + e.getMessage(), e);
-      }
-      try {
-        sleep(10);
-      } catch (InterruptedException e) {
+        i2CDevice = null;
+        LOG.log(Level.SEVERE, e.getMessage());
+        messageQueue.clear();
       }
     }
   }
 
+  private I2CDevice getI2CDevice() throws IOException {
+    if (i2CDevice == null) {
+      i2CDevice = i2CBus.getDevice(deviceId);
+    }
+    return i2CDevice;
+  }
 }

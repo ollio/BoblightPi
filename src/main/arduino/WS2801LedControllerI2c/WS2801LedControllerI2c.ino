@@ -58,7 +58,7 @@ void loop() {
 // 'N' = Numeric message, C = count of led blocks, ID = LedId (0-FF), RRGGBB = RGB 00-FF
 
 void receiveData(int byteCount) {
-    while( Wire.available() ) {
+  while( Wire.available() ) {
     dataBuf[writePtr++] = Wire.read();
     if(messageReceived()) {
       writePtr = 0;
