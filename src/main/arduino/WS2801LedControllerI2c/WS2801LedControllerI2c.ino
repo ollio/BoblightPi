@@ -5,8 +5,9 @@
 #define I2C_SLAVE_ADDRESS 0x41
 #define MAX_MESSAGE_SIZE 512
 #define NUM_LEDS 62
-#define SPI_DATA_PIN 11   // Yellow wire on Adafruit Pixels
-#define SPI_CLOCK_PIN 13  // Green wire on Adafruit Pixels
+#define SPI_DATA_PIN 2   // Yellow wire on Adafruit Pixels
+#define SPI_CLOCK_PIN 3  // Green wire on Adafruit Pixels
+#define ACTIVITY_LED 13
 
 Adafruit_WS2801 strip = Adafruit_WS2801(NUM_LEDS, SPI_DATA_PIN, SPI_CLOCK_PIN);
 
@@ -14,11 +15,14 @@ uint8_t dataBuf[MAX_MESSAGE_SIZE];
 uint16_t writePtr = 0;
 
 void setup() {
+  // init LED
+  pinMode(ACTIVITY_LED, OUTPUT);
+
   // initialize serial for output
   Serial.begin(9600);
-    while (!Serial) {
-      ; // wait for serial port to connect.
-    }
+//    while (!Serial) {
+//      ; // wait for serial port to connect.
+//    }
 
   Serial.print("Number of leds: ");
   Serial.println(strip.numPixels());
@@ -31,15 +35,19 @@ void setup() {
 
   // initialize the LED strip
   strip.begin();
-  clearStrip();
+  blinkStripRGB();
 
   // Update LED contents, to start they are all 'off'
   strip.show();
+  digitalWrite(ACTIVITY_LED, HIGH);
 }
 
 
 void loop() {
-  delay(100);
+  delay(500);
+  digitalWrite(ACTIVITY_LED, LOW);
+  delay(500);
+  digitalWrite(ACTIVITY_LED, HIGH);
 }
 
 // 'T' 'ID' 'RR GG BB'
@@ -62,7 +70,7 @@ void receiveData(int byteCount) {
 }
 
 boolean messageReceived() {
-  if(writePtr >= 5) {
+  if(writePtr >= 1) {
     switch(dataBuf[0]) {
       case 'T':
         return decodeTextMessage();
@@ -78,21 +86,18 @@ boolean messageReceived() {
 }
 
 boolean decodeNumericMessage() {
-  int blocks = dataBuf[1];
-  int len = blocks * 4;
-  if(writePtr == len + 2) {
+  if(writePtr >= 2) {
+      int blocks = dataBuf[1];
+      int len = blocks * 4;
+      if(writePtr == len + 2) {
+        printDataBuf();
 
-//    Serial.print("blocks: ");
-//    Serial.println(len);
-//    Serial.print("len: ");
-//    Serial.println(len);
-    printDataBuf();
-
-    for(int i=2; i < len; ) {
-      strip.setPixelColor(dataBuf[i++], color(dataBuf[i++], dataBuf[i++], dataBuf[i++])); 
-    } 
-    return true;
-  }   
+        for(int i=2; i < len; ) {
+          strip.setPixelColor(dataBuf[i++], color(dataBuf[i++], dataBuf[i++], dataBuf[i++]));
+        }
+        return true;
+      }
+  }
   return false;
 }  
 
@@ -146,6 +151,26 @@ void clearStrip() {
      strip.setPixelColor(i, color(0,0,0)); 
   }
   strip.show();
+}
+
+void blinkStripRGB() {
+  int i;
+  for (i=0; i < strip.numPixels(); i++) {
+     strip.setPixelColor(i, color(0xFF,0,0));
+  }
+  strip.show();
+  delay(500);
+  for (i=0; i < strip.numPixels(); i++) {
+     strip.setPixelColor(i, color(0,0xFF,0));
+  }
+  strip.show();
+  delay(500);
+  for (i=0; i < strip.numPixels(); i++) {
+     strip.setPixelColor(i, color(0,0,0xFF));
+  }
+  strip.show();
+  delay(500);
+  clearStrip();
 }
 
 // Create a 24 bit color value from R,G,B

@@ -23,17 +23,4 @@ public class IODeviceLogger extends IODeviceAbstract {
     LOG.info(format(">> LED %d RGB: #%2X%2X%2X >>", ledId, r, g, b));
     super.setLight(ledId, r, g, b);
   }
-
-  @Override
-  protected void send(byte[] message) {
-    LOG.info("<< SEND " + toHexString(message) + " <<");
-  }
-
-  private String toHexString(byte[] message) {
-    StringBuffer buf = new StringBuffer(message.length);
-    for (byte b : message) {
-      buf.append(format("%02X ", b));
-    }
-    return buf.toString();
-  }
 }

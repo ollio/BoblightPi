@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
@@ -35,6 +36,8 @@ import static org.springframework.web.bind.annotation.RequestMethod.PUT;
 
 @Controller()
 public class SimpleLightsController {
+
+  private final static Logger LOG = Logger.getLogger(SimpleLightsController.class.getName());
 
   @Inject
   BoblightConfiguration configuration;
@@ -63,6 +66,7 @@ public class SimpleLightsController {
   @RequestMapping(value = "/lights/{id}/{rgb}", method = PUT)
   @ResponseStatus(OK)
   public void putLights(@PathVariable("id") Integer id, @PathVariable("rgb") String rgb) {
+    LOG.info("Show LED Id: "+id+" color: " + rgb + " int: " + Integer.parseInt(rgb, 16));
     ioDevice.setLight(id, Integer.parseInt(rgb, 16));
   }
 }

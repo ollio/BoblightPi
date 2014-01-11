@@ -3,8 +3,8 @@
 
 #define MAX_MESSAGE_SIZE 512
 #define NUM_LEDS 62
-#define SPI_DATA_PIN 11         // Yellow wire on Adafruit Pixels
-#define SPI_CLOCK_PIN 13        // Green wire on Adafruit Pixels
+#define SPI_DATA_PIN 2         // Yellow wire on Adafruit Pixels
+#define SPI_CLOCK_PIN 3        // Green wire on Adafruit Pixels
 #define BAUD_RATE 115200
 
 Adafruit_WS2801 strip = Adafruit_WS2801(NUM_LEDS, SPI_DATA_PIN, SPI_CLOCK_PIN);
