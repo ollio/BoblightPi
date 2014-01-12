@@ -7,6 +7,6 @@ boblight:
     protocolVersion: 5
     config: config/boblight.conf
     lightOffset: -1
-    maxBlocks: 40
+    maxBlocks: 80
 
 

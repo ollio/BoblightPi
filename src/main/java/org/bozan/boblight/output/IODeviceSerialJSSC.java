@@ -107,6 +107,8 @@ public class IODeviceSerialJSSC extends IODeviceAbstract {
             buf.put(messageQueue.poll());
           }
 
+          logData(buf.array());
+
           port.writeBytes(buf.array());
         } catch (SerialPortException e1) {
           LOG.log(Level.SEVERE, "Can't send to serial port: " + e1.getMessage(), e1);

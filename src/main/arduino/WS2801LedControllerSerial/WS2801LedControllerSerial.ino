@@ -34,7 +34,6 @@ void setup() {
 
 
 void loop() {
-  delay(10);
   checkSerial();
 }
 
@@ -46,7 +45,7 @@ void loop() {
 // 'N' = Numeric message, C = count of led blocks, ID = LedId (0-FF), RRGGBB = RGB 00-FF
 
 void checkSerial() {
-  while( Serial.available() ) {
+  if( Serial.available() ) {
     dataBuf[writePtr++] = Serial.read();
     if(messageReceived()) {
       writePtr = 0;
