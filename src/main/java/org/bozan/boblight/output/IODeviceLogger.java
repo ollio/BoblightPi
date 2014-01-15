@@ -1,14 +1,11 @@
 package org.bozan.boblight.output;
 
 
-import org.springframework.stereotype.Component;
-
 import java.io.IOException;
 import java.util.logging.Logger;
 
 import static java.lang.String.format;
 
-@Component
 public class IODeviceLogger extends IODeviceAbstract {
   private final static Logger LOG = Logger.getLogger(IODeviceLogger.class.getName());
 

@@ -1,19 +1,34 @@
 package org.bozan.boblight;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.ImportResource;
+import org.bozan.boblight.input.BoblightServer;
+import org.bozan.boblight.input.BoblightServerNetty;
+import org.bozan.boblight.input.BoblightServerStandard;
 
-@Configuration
-@EnableAutoConfiguration
-@ComponentScan
-@ImportResource("integration-context.xml")
+import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.logging.Logger;
+
 public class BoblightPiApp {
 
-    public static void main(String[] args) {
-        ApplicationContext ctx = SpringApplication.run(BoblightPiApp.class, args);
-    }
+  private final static Logger LOG = Logger.getLogger(BoblightPiApp.class.getName());
+
+  private ExecutorService executor;
+  private BoblightServer boblightServer;
+
+  private void start() throws IOException {
+    startBoblightServer();
+  }
+
+  private void startBoblightServer() throws IOException {
+    LOG.info("Starting Server..");
+    boblightServer = new BoblightServerNetty();
+    executor = Executors.newCachedThreadPool();
+    executor.execute(boblightServer);
+  }
+
+
+  public static void main(String[] args) throws IOException {
+    new BoblightPiApp().start();
+  }
 }

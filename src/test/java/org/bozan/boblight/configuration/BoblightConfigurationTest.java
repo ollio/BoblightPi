@@ -1,13 +1,18 @@
 package org.bozan.boblight.configuration;
 
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import static org.fest.assertions.Assertions.assertThat;
 
 public class BoblightConfigurationTest {
 
-  BoblightConfiguration configuration = new BoblightConfiguration();
+  BoblightConfiguration configuration;
 
+  @BeforeMethod
+  public void setUp() throws Exception {
+    configuration =  BoblightConfiguration.getInstance();
+  }
 
   @Test
   public void parseConfigFile() throws Exception {

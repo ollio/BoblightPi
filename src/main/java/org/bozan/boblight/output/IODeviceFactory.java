@@ -1,29 +1,14 @@
 package org.bozan.boblight.output;
 
 import org.bozan.boblight.configuration.BoblightConfiguration;
-import org.springframework.stereotype.Component;
 
-import javax.inject.Inject;
 
 import java.io.IOException;
 
 import static org.apache.commons.lang.StringUtils.defaultString;
 import static org.apache.commons.lang.StringUtils.lowerCase;
 
-@Component
 public class IODeviceFactory {
-
-  @Inject
-  BoblightConfiguration configuration;
-
-  @Inject
-  IODeviceSerialJSSC ioDeviceSerialJSSC;
-
-  @Inject
-  IODeviceLogger ioDeviceLogger;
-
-  @Inject
-  IODeviceI2C ioDeviceI2C;
 
   private IODeviceAbstract device;
 
@@ -32,16 +17,18 @@ public class IODeviceFactory {
       return device;
     }
 
+    BoblightConfiguration configuration = BoblightConfiguration.getInstance();
+
     switch (defaultString(lowerCase(configuration.getDevice().get("type")))) {
       case "serial" :
-        device = ioDeviceSerialJSSC;
+        device = new IODeviceSerialJSSC();
         break;
       case "i2c" :
-        device = ioDeviceI2C;
+        device = new IODeviceI2C();
         break;
       case "console" :
       case "log" :
-        device = ioDeviceLogger;
+        device = new IODeviceLogger();
         break;
       default:
         throw new IOException("No such device: " + configuration.getDevice().get("type"));

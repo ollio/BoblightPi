@@ -6,24 +6,17 @@ import jssc.SerialPortEvent;
 import jssc.SerialPortEventListener;
 import jssc.SerialPortException;
 import org.bozan.boblight.configuration.BoblightConfiguration;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
-import javax.annotation.PreDestroy;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Queue;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.google.common.collect.Maps.newHashMap;
 import static java.lang.Thread.sleep;
 import static org.apache.commons.lang.math.NumberUtils.toInt;
 
-@Component
 public class IODeviceSerialJSSC extends IODeviceAbstract {
 
   private final static Logger LOG = Logger.getLogger(IODeviceSerialJSSC.class.getName());
@@ -31,9 +24,17 @@ public class IODeviceSerialJSSC extends IODeviceAbstract {
   private Timer refresher = new Timer(true);
   private SerialSender serialSender = new SerialSender();
   private SerialPort port;
+  private final int maxBlocks;
+  private final  BoblightConfiguration configuration;
 
-  @Autowired
-  BoblightConfiguration configuration;
+  public IODeviceSerialJSSC(BoblightConfiguration configuration) {
+    this.configuration = configuration;
+    this.maxBlocks = configuration.getMaxBlocks();
+  }
+
+  public IODeviceSerialJSSC() throws IOException {
+    this(BoblightConfiguration.getInstance());
+  }
 
   @Override
   void connect() throws IOException {
@@ -87,7 +88,6 @@ public class IODeviceSerialJSSC extends IODeviceAbstract {
     }
   }
 
-  @PreDestroy
   public void destroy() throws Exception {
     serialSender.close();
   }
@@ -98,7 +98,7 @@ public class IODeviceSerialJSSC extends IODeviceAbstract {
       while (!messageQueue.isEmpty()) {
         try {
           int blocks = messageQueue.size();
-          blocks = Math.min(blocks, configuration.getMaxBlocks());
+          blocks = Math.min(blocks, maxBlocks);
 
           ByteBuffer buf = ByteBuffer.allocate(blocks * 4 + 2);
           buf.put((byte) 'N');

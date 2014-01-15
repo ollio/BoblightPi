@@ -1,19 +1,17 @@
 buildscript {
     repositories {
-        maven { url "http://repo.spring.io/libs-snapshot" }
         maven { url "http://oss.sonatype.org/content/groups/public" }
         mavenLocal()
         mavenCentral()
-    }
-    dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:0.5.0.M6")
     }
 }
 
 apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
-apply plugin: 'spring-boot'
+apply plugin: 'application'
+
+mainClassName = 'org.bozan.boblight.BoblightPiApp'
 
 jar {
     baseName = 'BoblightPi'
@@ -26,16 +24,9 @@ repositories {
 }
 
 dependencies {
-    compile("org.springframework.boot:spring-boot-starter-web:0.5.0.M6") {
-        exclude module: "spring-boot-starter-tomcat"
-    }
-    compile("org.springframework.boot:spring-boot-starter-jetty:0.5.0.M6")
-//    compile("org.springframework.boot:spring-boot-starter-actuator:0.5.0.M6")
-    compile("org.springframework.boot:spring-boot-starter-integration:0.5.0.M6")
-    compile('javax.inject:javax.inject:1')
-    compile('org.yaml:snakeyaml:1.13')
     compile('commons-lang:commons-lang:2.6')
     compile('com.google.guava:guava:15.0')
+    compile('io.netty:netty-all:4.0.14.Final')
     compile('com.pi4j:pi4j-core:0.0.5')
     compile files('libs/jssc.jar')
 

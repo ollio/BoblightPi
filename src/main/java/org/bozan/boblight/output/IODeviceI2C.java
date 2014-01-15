@@ -3,27 +3,16 @@ package org.bozan.boblight.output;
 import com.pi4j.io.i2c.I2CBus;
 import com.pi4j.io.i2c.I2CDevice;
 import com.pi4j.io.i2c.I2CFactory;
-import jssc.SerialPortException;
-import org.apache.commons.lang.math.NumberUtils;
 import org.bozan.boblight.configuration.BoblightConfiguration;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 
-import java.awt.*;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.lang.String.format;
-import static java.lang.Thread.sleep;
-import static org.apache.commons.lang.math.NumberUtils.toDouble;
 import static org.apache.commons.lang.math.NumberUtils.toInt;
 
-@Component
-@EnableScheduling
 public class IODeviceI2C extends IODeviceAbstract {
   private final static Logger LOG = Logger.getLogger(IODeviceI2C.class.getName());
 
@@ -31,7 +20,6 @@ public class IODeviceI2C extends IODeviceAbstract {
   private int deviceId;
   private I2CDevice i2CDevice = null;
 
-  @Autowired
   BoblightConfiguration configuration;
 
   @Override
@@ -44,7 +32,6 @@ public class IODeviceI2C extends IODeviceAbstract {
     LOG.info(format("Fetching device ID: 0x%02X ", deviceId));
   }
 
-  @Scheduled(initialDelay = 1000, fixedRate = 50)
   public void reportCurrentTime() {
     if (!messageQueue.isEmpty()) {
       try {

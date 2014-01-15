@@ -1,47 +1,37 @@
 package org.bozan.boblight.configuration;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Configuration;
+import com.google.common.collect.Multimaps;
+import org.apache.commons.lang.math.NumberUtils;
 
 import java.io.*;
-import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.google.common.collect.Iterables.getFirst;
-import static org.apache.commons.lang.StringUtils.isBlank;
-import static org.apache.commons.lang.StringUtils.startsWith;
-import static org.apache.commons.lang.StringUtils.substring;
+import static org.apache.commons.lang.StringUtils.*;
+import static org.apache.commons.lang.math.NumberUtils.toInt;
 
-@Configuration
 public class BoblightConfiguration {
 
-  @Value("${boblight.protocolVersion}")
-  private int protocolVersion;
+  private Multimap<String,Map<String, String>> boblightConfig = ArrayListMultimap.create();
 
-  @Value("${boblight.port}")
-  private int port;
+  private static BoblightConfiguration instance;
 
-  @Value("${boblight.lightOffset}")
-  private int lightOffset;
+  private BoblightConfiguration() {}
 
-  @Value("${boblight.maxBlocks}")
-  private int maxBlocks;
-
-  Multimap<String,Map<String, String>> boblightConfig = ArrayListMultimap.create();
-
-  @Value("${boblight.config}")
-  void parseBoblightConfig(File configFile) throws IOException {
-    parseBoblightConfig(new FileInputStream(configFile));
+  public static BoblightConfiguration getInstance() throws IOException {
+    if(instance == null) {
+      instance = new BoblightConfiguration();
+      instance.parseBoblightConfig(new FileInputStream(System.getProperty("config", "./config/boblight.conf")));
+    }
+    return instance;
   }
 
   void parseBoblightConfig(InputStream config) throws IOException {
@@ -54,7 +44,7 @@ public class BoblightConfiguration {
         continue;
       }
 
-      Optional<String> sectionName = getSection(line);
+      Optional<String> sectionName = parseSection(line);
       if(sectionName.isPresent()) {
         if(currentSection != null && currentSectionConfig != null) {
           boblightConfig.put(currentSection, currentSectionConfig);
@@ -97,7 +87,7 @@ public class BoblightConfiguration {
     return Optional.fromNullable(entry);
   }
 
-  private Optional<String> getSection(String line) {
+  private Optional<String> parseSection(String line) {
     Pattern pattern = Pattern.compile("^\\[.*\\]$");
     Matcher matcher = pattern.matcher(line);
     if(matcher.matches()) {
@@ -107,19 +97,19 @@ public class BoblightConfiguration {
   }
 
   public int getProtocolVersion() {
-    return protocolVersion;
+    return toInt(getSection("global").get("protocolVersion"));
   }
 
   public int getPort() {
-    return port;
+    return toInt(getSection("global").get("port"));
   }
 
   public int getLightOffset() {
-    return lightOffset;
+    return toInt(getSection("global").get("lightOffset"));
   }
 
   public int getMaxBlocks() {
-    return maxBlocks;
+    return toInt(getSection("global").get("maxBlocks"));
   }
 
   public Collection<Map<String, String>> getLights() {
@@ -127,6 +117,10 @@ public class BoblightConfiguration {
   }
 
   public Map<String, String> getDevice() {
-    return getFirst(boblightConfig.get("device"), null);
+    return getSection("device");
+  }
+
+  public Map<String, String> getSection(final String sectionName) {
+    return getFirst(boblightConfig.get(sectionName), null);
   }
 }

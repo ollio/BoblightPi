@@ -1,23 +1,17 @@
-package org.bozan.boblight.endpoint;
+package org.bozan.boblight.input;
 
 import org.apache.commons.lang.StringUtils;
 import org.bozan.boblight.configuration.BoblightConfiguration;
 import org.bozan.boblight.output.IODevice;
 import org.bozan.boblight.output.IODeviceFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.integration.annotation.MessageEndpoint;
-import org.springframework.integration.annotation.ServiceActivator;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import javax.inject.Inject;
 import java.io.IOException;
 import java.util.Map;
 import java.util.logging.Logger;
 
 import static java.lang.Math.round;
+import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.apache.commons.lang.math.NumberUtils.toDouble;
-import static org.apache.commons.lang.math.NumberUtils.toFloat;
 import static org.apache.commons.lang.math.NumberUtils.toInt;
 
 /**
@@ -138,10 +132,9 @@ import static org.apache.commons.lang.math.NumberUtils.toInt;
  * }}}
  */
 
-@MessageEndpoint
-public class BoblightEndpoint {
+public class BoblightProtocolHandlerImpl implements BoblightProtocolHandler {
 
-  private final static Logger LOG = Logger.getLogger(BoblightEndpoint.class.getName());
+  private final static Logger LOG = Logger.getLogger(BoblightProtocolHandlerImpl.class.getName());
 
   public static final String HELLO = "hello";
   public static final String GET = "get";
@@ -152,31 +145,35 @@ public class BoblightEndpoint {
   public static final String LIGHTS = "lights";
   public static final String LIGHT = "light";
 
-  @Inject
-  BoblightConfiguration configuration;
+  final BoblightConfiguration configuration;
 
-  @Inject
-  IODeviceFactory ioDeviceFactory;
+  final IODeviceFactory ioDeviceFactory;
 
   IODevice ioDevice = null;
 
+  public BoblightProtocolHandlerImpl() throws IOException {
+    configuration = BoblightConfiguration.getInstance();
+    ioDeviceFactory = new IODeviceFactory();
+    initIoDevice();
+  }
 
-  @PostConstruct
-  void info() throws IOException {
+  void initIoDevice() throws IOException {
     LOG.info("Endpoint listening on port: " + configuration.getPort());
     ioDevice = ioDeviceFactory.getIODevice();
   }
 
-  @ServiceActivator
-  public byte[] handleMessage(byte[] input) throws Exception {
-    String response = handleMessage(new String(input));
-    return response != null ? response.getBytes() : null;
+  @Override
+  public void handleMessage(String request, ResponseHandler responseHandler) {
+    if(isNotBlank(request)) {
+      String response = handleMessage(request);
+      if(isNotBlank(response)) {
+        responseHandler.onResponse(response);
+      };
+    }
   }
 
-  String handleMessage(String input) throws Exception {
+  String handleMessage(String input) {
     String[] command = StringUtils.split(input);
-
-//    System.out.println("Received: " + input);
 
     switch (command[0]) {
       case HELLO:

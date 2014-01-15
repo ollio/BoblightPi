@@ -13,16 +13,18 @@ import static org.mockito.Mockito.when;
 
 public class IODeviceSerialJSSCTest {
 
-  IODeviceSerialJSSC controller = new IODeviceSerialJSSC();
+  IODeviceSerialJSSC controller;
 
   @BeforeTest
   public void setUp() throws Exception {
-    controller.configuration = mock(BoblightConfiguration.class);
+    BoblightConfiguration configuration = mock(BoblightConfiguration.class);
+    controller = new IODeviceSerialJSSC(configuration);
+
     Map<String, String> device = new HashMap<>();
     device.put("output", "COM3");
     device.put("rate", "115200");
-    when(controller.configuration.getDevice()).thenReturn(device);
-    when(controller.configuration.getMaxBlocks()).thenReturn(40);
+    when(configuration.getDevice()).thenReturn(device);
+    when(configuration.getMaxBlocks()).thenReturn(40);
 
     controller.connect();
   }
