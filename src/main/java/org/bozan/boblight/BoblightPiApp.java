@@ -2,12 +2,13 @@ package org.bozan.boblight;
 
 import org.bozan.boblight.input.BoblightServer;
 import org.bozan.boblight.input.BoblightServerNetty;
-import org.bozan.boblight.input.BoblightServerStandard;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
+
+import static java.lang.Thread.sleep;
 
 public class BoblightPiApp {
 
@@ -22,11 +23,20 @@ public class BoblightPiApp {
 
   private void startBoblightServer() throws IOException {
     LOG.info("Starting Server..");
+
     boblightServer = new BoblightServerNetty();
     executor = Executors.newCachedThreadPool();
     executor.execute(boblightServer);
-  }
 
+    while (true) {
+      try {
+        sleep(1000);
+      } catch (InterruptedException e) {
+
+      }
+    }
+
+  }
 
   public static void main(String[] args) throws IOException {
     new BoblightPiApp().start();

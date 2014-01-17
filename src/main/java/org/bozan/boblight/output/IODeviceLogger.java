@@ -1,6 +1,8 @@
 package org.bozan.boblight.output;
 
 
+import org.bozan.boblight.configuration.BoblightConfiguration;
+
 import java.io.IOException;
 import java.util.logging.Logger;
 
@@ -9,6 +11,9 @@ import static java.lang.String.format;
 public class IODeviceLogger extends IODeviceAbstract {
   private final static Logger LOG = Logger.getLogger(IODeviceLogger.class.getName());
 
+  public IODeviceLogger(BoblightConfiguration configuration) {
+    super(configuration);
+  }
 
   @Override
   void connect() throws IOException {
@@ -16,8 +21,7 @@ public class IODeviceLogger extends IODeviceAbstract {
   }
 
   @Override
-  public void setLight(int ledId, int r, int g, int b) {
-    LOG.info(format(">> LED %d RGB: #%2X%2X%2X >>", ledId, r, g, b));
-    super.setLight(ledId, r, g, b);
+  protected void writeBytes(byte[] array) throws Exception {
+    logData(array);
   }
 }

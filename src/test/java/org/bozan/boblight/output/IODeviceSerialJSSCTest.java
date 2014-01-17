@@ -31,8 +31,6 @@ public class IODeviceSerialJSSCTest {
 
   @AfterTest
   public void tearDown() throws Exception {
-    sleep(2000);
-    controller.destroy();
   }
 
   @DataProvider
@@ -47,21 +45,21 @@ public class IODeviceSerialJSSCTest {
      };
   }
 
-  @Test(invocationCount = 4, dataProvider = "colors")
-  public void testSetLight(int r, int g, int b, int speed) throws Exception {
-    for(int i=0; i<64; i++) {
-      controller.setLight(i, r, g, b);
-      if(i>0) {
-        controller.setLight(i-1, 0, 0, 0);
-      }
-      sleep(speed);
-    }
-    for(int i=64; i>0; i--) {
-      controller.setLight(i, r, g, b);
-      controller.setLight(i+1, 0, 0, 0);
-      sleep(speed);
-    }
-
-//    sleep(1000);
-  }
+//  @Test(invocationCount = 4, dataProvider = "colors")
+//  public void testSetLight(int r, int g, int b, int speed) throws Exception {
+//    for(int i=0; i<64; i++) {
+//      controller.setLight(i, r, g, b);
+//      if(i>0) {
+//        controller.setLight(i-1, 0, 0, 0);
+//      }
+//      sleep(speed);
+//    }
+//    for(int i=64; i>0; i--) {
+//      controller.setLight(i, r, g, b);
+//      controller.setLight(i+1, 0, 0, 0);
+//      sleep(speed);
+//    }
+//
+////    sleep(1000);
+//  }
 }

@@ -18,47 +18,24 @@ public class IODeviceI2C extends IODeviceAbstract {
 
   private I2CBus i2CBus;
   private int deviceId;
-  private I2CDevice i2CDevice = null;
+  private I2CDevice i2CDevice;
 
-  BoblightConfiguration configuration;
+  public IODeviceI2C(BoblightConfiguration configuration) {
+    super(configuration);
+  }
 
   @Override
   void connect() throws IOException {
     int busId = toInt(configuration.getDevice().get("i2cBus"));
     LOG.info("Initialize I2C Bus: " + busId);
     i2CBus = I2CFactory.getInstance(busId);
-
     deviceId = Integer.parseInt(configuration.getDevice().get("i2cDevice"), 16);
     LOG.info(format("Fetching device ID: 0x%02X ", deviceId));
+    i2CDevice = i2CBus.getDevice(deviceId);
   }
 
-  public void reportCurrentTime() {
-    if (!messageQueue.isEmpty()) {
-      try {
-        int blocks = messageQueue.size();
-        blocks = Math.min(blocks, configuration.getMaxBlocks());
-
-        ByteBuffer buf = ByteBuffer.allocate(blocks * 4 + 2);
-        buf.put((byte) 'N');
-        buf.put((byte) blocks);
-        for (int i = 0; i < blocks; i++) {
-          buf.put(messageQueue.poll());
-        }
-
-        logData(buf.array());
-        getI2CDevice().write(buf.array(), 0, buf.array().length);
-      } catch (IOException e) {
-        i2CDevice = null;
-        LOG.log(Level.SEVERE, e.getMessage());
-        messageQueue.clear();
-      }
-    }
-  }
-
-  private I2CDevice getI2CDevice() throws IOException {
-    if (i2CDevice == null) {
-      i2CDevice = i2CBus.getDevice(deviceId);
-    }
-    return i2CDevice;
+  @Override
+  protected synchronized void writeBytes(byte[] data) throws Exception {
+    i2CDevice.write(data, 0, data.length);
   }
 }

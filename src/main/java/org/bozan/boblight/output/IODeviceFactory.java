@@ -17,21 +17,21 @@ public class IODeviceFactory {
       return device;
     }
 
-    BoblightConfiguration configuration = BoblightConfiguration.getInstance();
+    BoblightConfiguration config = BoblightConfiguration.getInstance();
 
-    switch (defaultString(lowerCase(configuration.getDevice().get("type")))) {
+    switch (defaultString(lowerCase(config.getDevice().get("type")))) {
       case "serial" :
-        device = new IODeviceSerialJSSC();
+        device = new IODeviceSerialJSSC(config);
         break;
       case "i2c" :
-        device = new IODeviceI2C();
+        device = new IODeviceI2C(config);
         break;
       case "console" :
       case "log" :
-        device = new IODeviceLogger();
+        device = new IODeviceLogger(config);
         break;
       default:
-        throw new IOException("No such device: " + configuration.getDevice().get("type"));
+        throw new IOException("No such device: " + config.getDevice().get("type"));
     }
     device.connect();
     return device;

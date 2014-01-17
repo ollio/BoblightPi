@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 
 import static java.lang.Math.round;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.apache.commons.lang.math.NumberUtils.toByte;
 import static org.apache.commons.lang.math.NumberUtils.toDouble;
 import static org.apache.commons.lang.math.NumberUtils.toInt;
 
@@ -211,12 +212,12 @@ public class BoblightProtocolHandlerImpl implements BoblightProtocolHandler {
 
   //set light 62 rgb 0 0.564706 0.996078
   private String setLight(String[] command) {
-    ioDevice.setLight(toInt(command[2]), ftoi(command[4]), ftoi(command[5]), ftoi(command[6]));
+    ioDevice.setLight(toByte(command[2]), ftoByte(command[4]), ftoByte(command[5]), ftoByte(command[6]));
     return null;
   }
 
-  private int ftoi(String val) {
-    return (int) round(toDouble(val) * 255.0);
+  private byte ftoByte(String val) {
+    return (byte) round(toDouble(val) * 255.0);
   }
 
   private String getLights() {

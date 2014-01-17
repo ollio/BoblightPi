@@ -21,19 +21,10 @@ public class IODeviceSerialJSSC extends IODeviceAbstract {
 
   private final static Logger LOG = Logger.getLogger(IODeviceSerialJSSC.class.getName());
 
-  private Timer refresher = new Timer(true);
-  private SerialSender serialSender = new SerialSender();
   private SerialPort port;
-  private final int maxBlocks;
-  private final  BoblightConfiguration configuration;
 
   public IODeviceSerialJSSC(BoblightConfiguration configuration) {
-    this.configuration = configuration;
-    this.maxBlocks = configuration.getMaxBlocks();
-  }
-
-  public IODeviceSerialJSSC() throws IOException {
-    this(BoblightConfiguration.getInstance());
+    super(configuration);
   }
 
   @Override
@@ -47,8 +38,6 @@ public class IODeviceSerialJSSC extends IODeviceAbstract {
       if (port.openPort() && port.setParams(rate, 8, 1, 0)) {
         LOG.info("Port opened success");
       }
-
-      refresher.schedule(serialSender, 200, 20);
 
       port.addEventListener(new SerialPortEventListener() {
         @Override
@@ -88,42 +77,8 @@ public class IODeviceSerialJSSC extends IODeviceAbstract {
     }
   }
 
-  public void destroy() throws Exception {
-    serialSender.close();
-  }
-
-  private class SerialSender extends TimerTask {
-    @Override
-    public synchronized void run() {
-      while (!messageQueue.isEmpty()) {
-        try {
-          int blocks = messageQueue.size();
-          blocks = Math.min(blocks, maxBlocks);
-
-          ByteBuffer buf = ByteBuffer.allocate(blocks * 4 + 2);
-          buf.put((byte) 'N');
-          buf.put((byte) blocks);
-          for (int i = 0; i < blocks; i++) {
-            buf.put(messageQueue.poll());
-          }
-
-          logData(buf.array());
-
-          port.writeBytes(buf.array());
-        } catch (SerialPortException e1) {
-          LOG.log(Level.SEVERE, "Can't send to serial port: " + e1.getMessage(), e1);
-        }
-        try {
-          sleep(10);
-        } catch (InterruptedException e) {
-        }
-      }
-    }
-
-    void close() throws SerialPortException {
-      if (port != null) {
-        port.closePort();
-      }
-    }
+  @Override
+  protected synchronized void writeBytes(byte[] data) throws Exception {
+    port.writeBytes(data);
   }
 }
