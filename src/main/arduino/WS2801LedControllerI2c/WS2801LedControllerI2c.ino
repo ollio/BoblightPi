@@ -3,195 +3,138 @@
 #include "Adafruit_WS2801.h"
 
 #define I2C_SLAVE_ADDRESS 0x41
-#define MAX_MESSAGE_SIZE 512
 #define NUM_LEDS 62
-#define SPI_DATA_PIN 2   // Yellow wire on Adafruit Pixels
-#define SPI_CLOCK_PIN 3  // Green wire on Adafruit Pixels
+#define SPI_DATA_PIN 10   // Yellow wire on Adafruit Pixels
+#define SPI_CLOCK_PIN 11  // Green wire on Adafruit Pixels
+#define MAX_MESSAGE_SIZE 512
 #define ACTIVITY_LED 13
+
+//#define BAUD_RATE 57600
+
+struct DataEvent {
+  boolean  ready;
+  uint8_t  bufNum;
+};
 
 Adafruit_WS2801 strip = Adafruit_WS2801(NUM_LEDS, SPI_DATA_PIN, SPI_CLOCK_PIN);
 
-uint8_t dataBuf[MAX_MESSAGE_SIZE];
+DataEvent dataEvent;
+
+uint8_t dataBuf[2][MAX_MESSAGE_SIZE];
+uint8_t bufSelector = 0;
 uint16_t writePtr = 0;
 
+
 void setup() {
+//  Serial.begin(BAUD_RATE);
+
   // init LED
   pinMode(ACTIVITY_LED, OUTPUT);
-
-  // initialize serial for output
-  Serial.begin(9600);
-//    while (!Serial) {
-//      ; // wait for serial port to connect.
-//    }
-
-  Serial.print("Number of leds: ");
-  Serial.println(strip.numPixels());
-  Serial.println("Valid command: T00FF00000100FF00020000FF");
 
   // initialize i2c as slave
   Wire.begin(I2C_SLAVE_ADDRESS);
   Wire.onReceive(receiveData);
-//  Wire.onRequest(sendData);
 
   // initialize the LED strip
   strip.begin();
   blinkStripRGB();
 
-  // Update LED contents, to start they are all 'off'
-  strip.show();
-  digitalWrite(ACTIVITY_LED, HIGH);
+//  Serial.println("Init complete");
 }
-
 
 void loop() {
-  delay(500);
-  digitalWrite(ACTIVITY_LED, LOW);
-  delay(500);
-  digitalWrite(ACTIVITY_LED, HIGH);
+  if(dataEvent.ready) {
+    dataEvent.ready = false;
+    int leds = dataBuf[dataEvent.bufNum][1];
+    digitalWrite(ACTIVITY_LED, dataEvent.bufNum);
+
+/*
+    Serial.print("leds: ");
+    Serial.print(leds);
+    Serial.print(" bufNum: ");
+    Serial.println(dataEvent.bufNum);
+*/
+
+    for(int i=2; i < leds * 4; ) {
+        uint16_t led = dataBuf[dataEvent.bufNum][i++];
+        strip.setPixelColor(led, color(dataBuf[dataEvent.bufNum][i++],      // R
+                                       dataBuf[dataEvent.bufNum][i++],      // G
+                                       dataBuf[dataEvent.bufNum][i++]));     // B
+    }
+    strip.show();
+    delay(20);
+    memset(dataBuf[dataEvent.bufNum], 0, leds * 4);
+  } else {
+    delay(20);
+  }
 }
 
-// 'T' 'ID' 'RR GG BB'
-// 'T' = Text message, 'ID' = LedId (0-99), 'RRGGBB' = RGB 00-FF
-// T01FF0000
-
-// 'N' CC ID RR GG BB 
+// 'N' LL ID RR GG BB
 // 'N' = Numeric message, C = count of led blocks, ID = LedId (0-FF), RRGGBB = RGB 00-FF
-
 void receiveData(int byteCount) {
   while( Wire.available() ) {
-    dataBuf[writePtr++] = Wire.read();
-    if(messageReceived()) {
-      writePtr = 0;
-      strip.show();
-    } else if(writePtr == MAX_MESSAGE_SIZE) {
-      writePtr = 0;
-    }
-  }
-}
-
-boolean messageReceived() {
-  if(writePtr >= 1) {
-    switch(dataBuf[0]) {
-      case 'T':
-        return decodeTextMessage();
-      case 'N':
-        return decodeNumericMessage();
-      default: // garbage received
-        Serial.println("WARNING: garbage received!");
-        printDataBuf();
-        writePtr = 0;  
-    } 
-  }
-  return false;
-}
-
-boolean decodeNumericMessage() {
-  if(writePtr >= 2) {
-      int blocks = dataBuf[1];
-      int len = blocks * 4;
-      if(writePtr == len + 2) {
-        printDataBuf();
-
-        for(int i=2; i < len; ) {
-          strip.setPixelColor(dataBuf[i++], color(dataBuf[i++], dataBuf[i++], dataBuf[i++]));
-        }
-        return true;
+    dataBuf[bufSelector][writePtr++] = Wire.read();
+    if(writePtr == 1) {
+      if(dataBuf[bufSelector][0] != 'N') {
+         writePtr = 0;
       }
-  }
-  return false;
-}  
-
-// T00FF00000100FF00020000FF
-boolean decodeTextMessage() {
-  int len = -1;
-  for(int i=0; i < writePtr; i++) {
-    if(dataBuf[i] == '\n') {
-      len = i;
+    } else if(writePtr >= 2 &&
+              writePtr >= (dataBuf[bufSelector][1] * 4 + 2)) {
+      dataEvent.ready = true;
+      dataEvent.bufNum = bufSelector;
+      bufSelector = (bufSelector + 1) % 2;
+      writePtr = 0;
     }
-  }  
-
-  if(len > 1) {
-    Serial.print("len: ");
-    Serial.println(len);
-    printDataBuf();
-    for(int i=1; i<len; ) {
-      char id[2];
-      id[0] = dataBuf[i++];
-      id[1] = dataBuf[i++];
-  
-      byte led = atoi(id);
-      uint32_t rgb = (atoi(dataBuf[i++]) << 4) | 
-                     (atoi(dataBuf[i++]) << 0) |
-                     (atoi(dataBuf[i++]) << 12) |
-                     (atoi(dataBuf[i++]) << 8) |
-                     (atoi(dataBuf[i++]) << 20) |
-                     (atoi(dataBuf[i++]) << 16);
-      strip.setPixelColor(led, rgb); 
-    } 
-    return true;
   }
-  return false;
-}
-
-uint32_t atoi(byte b) {
-  if(b >= '0' && b <= '9') {
-    return b - 48;
-  }
-  if(b >= 'A' && b <= 'F') {
-    return b - 55;
-  }
-  if(b >= 'a' && b <= 'f') {
-    return b - 87;
-  }
-}
-
-void clearStrip() {
-  int i;
-  for (i=0; i < strip.numPixels(); i++) {
-     strip.setPixelColor(i, color(0,0,0)); 
-  }
-  strip.show();
 }
 
 void blinkStripRGB() {
   int i;
   for (i=0; i < strip.numPixels(); i++) {
-     strip.setPixelColor(i, color(0xFF,0,0));
+     strip.setPixelColor(i, color(0xAA,0x22,0x44));
   }
   strip.show();
   delay(500);
   for (i=0; i < strip.numPixels(); i++) {
-     strip.setPixelColor(i, color(0,0xFF,0));
+     strip.setPixelColor(i, color(0x33,0xCC,0x99));
   }
   strip.show();
   delay(500);
   for (i=0; i < strip.numPixels(); i++) {
-     strip.setPixelColor(i, color(0,0,0xFF));
+     strip.setPixelColor(i, color(0xAA,0x33,0x11));
   }
   strip.show();
   delay(500);
-  clearStrip();
+}
+
+void clearStrip() {
+  int i;
+  for (i=0; i < strip.numPixels(); i++) {
+     strip.setPixelColor(i, color(0,0,0));
+  }
+  strip.show();
 }
 
 // Create a 24 bit color value from R,G,B
 uint32_t color(byte r, byte g, byte b) {
   uint32_t c;
-  c = b;
+  c = r;
   c <<= 8;
   c |= g;
   c <<= 8;
-  c |= r;
+  c |= b;
   return c;
 }
 
-void printDataBuf() {
+/*void printDataBuf() {
   int i;
+  int len = dataBuf[dataEvent.bufNum][1] * 4;
   Serial.print("LEN: ");
-  Serial.print(writePtr);
+  Serial.print(len);
   Serial.print(" DATA: ");
-  for (i = 0; i < writePtr; i++) {
-    Serial.print(dataBuf[i], HEX);
+  for (i = 0; i < len; i++) {
+    Serial.print(dataBuf[dataEvent.bufNum][i], HEX);
     Serial.print(" ");
   }
   Serial.println();
-}
+}*/

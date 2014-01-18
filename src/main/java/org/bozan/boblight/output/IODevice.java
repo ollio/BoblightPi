@@ -4,5 +4,5 @@ public interface IODevice {
 
   void setLight(byte ledId, byte r, byte g, byte b);
 
-//  void setLight(int ledId, int rgb);
+//  void setLight(int id, int rgb);
 }

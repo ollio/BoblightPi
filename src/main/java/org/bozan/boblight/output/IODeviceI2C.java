@@ -11,6 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.lang.String.format;
+import static java.lang.Thread.sleep;
 import static org.apache.commons.lang.math.NumberUtils.toInt;
 
 public class IODeviceI2C extends IODeviceAbstract {
@@ -26,9 +27,8 @@ public class IODeviceI2C extends IODeviceAbstract {
 
   @Override
   void connect() throws IOException {
-    int busId = toInt(configuration.getDevice().get("i2cBus"));
-    LOG.info("Initialize I2C Bus: " + busId);
-    i2CBus = I2CFactory.getInstance(busId);
+    LOG.info("Initialize I2C Bus: " + I2CBus.BUS_1);
+    i2CBus = I2CFactory.getInstance(I2CBus.BUS_1);
     deviceId = Integer.parseInt(configuration.getDevice().get("i2cDevice"), 16);
     LOG.info(format("Fetching device ID: 0x%02X ", deviceId));
     i2CDevice = i2CBus.getDevice(deviceId);
@@ -36,6 +36,9 @@ public class IODeviceI2C extends IODeviceAbstract {
 
   @Override
   protected synchronized void writeBytes(byte[] data) throws Exception {
-    i2CDevice.write(data, 0, data.length);
+    for (byte b : data) {
+      i2CDevice.write(b);
+//      sleep(1);
+    }
   }
 }
