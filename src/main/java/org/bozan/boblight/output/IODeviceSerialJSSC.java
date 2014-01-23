@@ -42,12 +42,11 @@ public class IODeviceSerialJSSC extends IODeviceAbstract {
       port.addEventListener(new SerialPortEventListener() {
         @Override
         public void serialEvent(SerialPortEvent serialPortEvent) {
-  /*
           switch(serialPortEvent.getEventType()) {
             case SerialPortEvent.RXCHAR: LOG.info("EVENT RXCHAR"); break;
             case SerialPortEvent.RXFLAG: LOG.info("EVENT RXFLAG"); break;
             case SerialPortEvent.TXEMPTY: LOG.info("EVENT TXEMPTY");
-              serialSender.canSend(true);
+//              serialSender.canSend(true);
               break;
             case SerialPortEvent.CTS: LOG.info("EVENT CTS"); break;
             case SerialPortEvent.DSR: LOG.info("EVENT DSR"); break;
@@ -56,12 +55,11 @@ public class IODeviceSerialJSSC extends IODeviceAbstract {
             case SerialPortEvent.ERR: LOG.info("EVENT ERR"); break;
             case SerialPortEvent.RING: LOG.info("EVENT RING"); break;
           }
-  */
           //        LOG.info("Serial Event: " + serialPortEvent.getEventType());
           try {
             String line = port.readString();
             if (line != null) {
-              LOG.info("Arduino answer: " + line);
+              LOG.info(">> " + line);
             }
             sleep(100);
           } catch (Exception e) {
@@ -79,6 +77,9 @@ public class IODeviceSerialJSSC extends IODeviceAbstract {
 
   @Override
   protected synchronized void writeBytes(byte[] data) throws Exception {
-    port.writeBytes(data);
+    for (byte b : data) {
+      port.writeByte(b);
+      sleep(2);
+    }
   }
 }
