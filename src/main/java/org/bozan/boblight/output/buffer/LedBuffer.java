@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 public class LedBuffer {
 
-  static final int TOLERANCE = 5;
+  static final int TOLERANCE = 10;
 
   HashMap<Byte, Led> leds = new HashMap<>();
 

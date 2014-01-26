@@ -3,6 +3,7 @@ package org.bozan.boblight.output;
 import com.pi4j.io.i2c.I2CBus;
 import com.pi4j.io.i2c.I2CDevice;
 import com.pi4j.io.i2c.I2CFactory;
+import com.pi4j.jni.I2C;
 import org.bozan.boblight.configuration.BoblightConfiguration;
 
 import java.io.IOException;
@@ -35,10 +36,17 @@ public class IODeviceI2C extends IODeviceAbstract {
   }
 
   @Override
+  void disconnect() throws IOException {
+    LOG.info("Disconnect I2C device " + deviceId);
+    i2CBus.close();
+  }
+
+  @Override
   protected synchronized void writeBytes(byte[] data) throws Exception {
+//    i2CDevice.write(data, 0, data.length);
     for (byte b : data) {
       i2CDevice.write(b);
-//      sleep(1);
+      sleep(1);
     }
   }
 }

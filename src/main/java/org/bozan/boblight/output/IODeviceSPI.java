@@ -1,15 +1,12 @@
 package org.bozan.boblight.output;
 
-import com.pi4j.io.i2c.I2CBus;
-import com.pi4j.io.i2c.I2CDevice;
-import com.pi4j.io.i2c.I2CFactory;
 import com.pi4j.wiringpi.Spi;
 import org.bozan.boblight.configuration.BoblightConfiguration;
 
 import java.io.IOException;
 import java.util.logging.Logger;
 
-import static java.lang.String.format;
+import static java.lang.Thread.sleep;
 
 public class IODeviceSPI extends IODeviceAbstract {
   private final static Logger LOG = Logger.getLogger(IODeviceSPI.class.getName());
@@ -37,7 +34,7 @@ public class IODeviceSPI extends IODeviceAbstract {
   void connect() throws IOException {
     LOG.info("Initialize SPI Master ");
 
-    int fd = Spi.wiringPiSPISetup(0, 10000000);;
+    int fd = Spi.wiringPiSPISetup(0, 10000000);
     if (fd <= -1) {
       throw new IOException("SPI SETUP FAILED");
     }
@@ -58,14 +55,16 @@ public class IODeviceSPI extends IODeviceAbstract {
     packet[1] = register;  // register byte
     packet[2] = (byte)data;  // data byte
 
-    Spi.wiringPiSPIDataRW(0, packet, 3);
+    logData(packet);
+
+    Spi.wiringPiSPIDataRW(0, packet, packet.length);
   }
 
   @Override
   protected synchronized void writeBytes(byte[] data) throws Exception {
     for (byte b : data) {
       write(GPIOA, b);
-//      sleep(1);
+      sleep(1);
     }
   }
 }

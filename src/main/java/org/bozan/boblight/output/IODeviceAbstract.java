@@ -32,10 +32,21 @@ abstract class IODeviceAbstract implements IODevice {
     this.configuration = configuration;
     this.maxBlocks = configuration.getMaxBlocks();
     this.lightOffset = (byte) configuration.getLightOffset();
-    refresher.schedule(new SendTask(), 1000, 20);
+    refresher.schedule(new SendTask(), 1000, 10);
   }
 
   abstract void connect() throws IOException;
+
+  void disconnect() throws IOException {};
+
+  private void reconnect() {
+    try {
+      disconnect();
+      connect();
+    } catch (IOException e) {
+      LOG.severe("Error reconnect: " + e.getMessage());
+    }
+  }
 
   @Override
   public final void setLight(byte ledId, byte r, byte g, byte b) {
@@ -71,7 +82,7 @@ abstract class IODeviceAbstract implements IODevice {
         }
 
         LOG.info("queue size: " + messageQueue.size() + " blocks: " + blocks);
-        logData(buf.array());
+//        logData(buf.array());
         try {
           writeBytes(buf.array());
         } catch (Exception e) {

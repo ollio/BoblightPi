@@ -76,6 +76,15 @@ public class IODeviceSerialJSSC extends IODeviceAbstract {
   }
 
   @Override
+  void disconnect() throws IOException {
+    try {
+      port.closePort();
+    } catch (Exception e) {
+      throw new IOException(e);
+    }
+  }
+
+  @Override
   protected synchronized void writeBytes(byte[] data) throws Exception {
     for (byte b : data) {
       port.writeByte(b);
