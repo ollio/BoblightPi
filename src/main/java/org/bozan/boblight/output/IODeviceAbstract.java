@@ -1,7 +1,8 @@
 package org.bozan.boblight.output;
 
 import org.bozan.boblight.configuration.BoblightConfiguration;
-import org.bozan.boblight.output.model.Led;
+import org.bozan.boblight.output.buffer.Led;
+import org.bozan.boblight.output.buffer.LedBuffer;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -11,12 +12,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Maps.newConcurrentMap;
 import static com.google.common.collect.Maps.newHashMap;
 import static java.lang.Thread.sleep;
 
 abstract class IODeviceAbstract implements IODevice {
   private final static Logger LOG = Logger.getLogger(IODevice.class.getName());
+
+  private LedBuffer ledBuffer = new LedBuffer();
 
   private Queue<Led> messageQueue = new ConcurrentLinkedDeque<>();
   protected final BoblightConfiguration configuration;
@@ -38,12 +40,13 @@ abstract class IODeviceAbstract implements IODevice {
   @Override
   public final void setLight(byte ledId, byte r, byte g, byte b) {
     Led led = new Led((byte) (lightOffset + ledId), r, g, b);
-    messageQueue.remove(led);
-    messageQueue.offer(led);
+    if(ledBuffer.updateLed(led)) {
+      messageQueue.offer(led);
+    }
   }
 
   protected void logData(byte[] data) {
-    StringBuffer buffer = new StringBuffer("DATA:");
+    StringBuffer buffer = new StringBuffer("<< len["+data.length+"] ");
 
     for (byte b : data) {
       buffer.append(String.format(" %02X", b));
@@ -67,8 +70,8 @@ abstract class IODeviceAbstract implements IODevice {
           buf.put(messageQueue.poll().array());
         }
 
-//        LOG.info("queue size: " + messageQueue.size() + " blocks: " + blocks);
-//        logData(buf.array());
+        LOG.info("queue size: " + messageQueue.size() + " blocks: " + blocks);
+        logData(buf.array());
         try {
           writeBytes(buf.array());
         } catch (Exception e) {
