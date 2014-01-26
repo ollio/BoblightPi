@@ -11,23 +11,17 @@
 
 //#define BAUD_RATE 57600
 
-struct DataEvent {
-  boolean  ready;
-  uint8_t  bufNum;
-};
-
 Adafruit_WS2801 strip = Adafruit_WS2801(NUM_LEDS, SPI_DATA_PIN, SPI_CLOCK_PIN);
 
-DataEvent dataEvent;
-
-uint8_t dataBuf[2][MAX_MESSAGE_SIZE];
-uint8_t bufSelector = 0;
-uint16_t writePtr = 0;
-
+boolean  dataReady;
+uint16_t bufPos = 0;
+uint16_t bufLen = 0;
+uint8_t curLed = 0;
+uint8_t curR = 0;
+uint8_t curG = 0;
+uint8_t curB = 0;
 
 void setup() {
-//  Serial.begin(BAUD_RATE);
-
   // init LED
   pinMode(ACTIVITY_LED, OUTPUT);
 
@@ -38,53 +32,51 @@ void setup() {
   // initialize the LED strip
   strip.begin();
   blinkStripRGB();
-
-//  Serial.println("Init complete");
 }
 
 void loop() {
-  if(dataEvent.ready) {
-    dataEvent.ready = false;
-    int leds = dataBuf[dataEvent.bufNum][1];
-    digitalWrite(ACTIVITY_LED, dataEvent.bufNum);
-
-/*
-    Serial.print("leds: ");
-    Serial.print(leds);
-    Serial.print(" bufNum: ");
-    Serial.println(dataEvent.bufNum);
-*/
-
-    for(int i=2; i < leds * 4; ) {
-        uint16_t led = dataBuf[dataEvent.bufNum][i++];
-        strip.setPixelColor(led, color(dataBuf[dataEvent.bufNum][i++],      // R
-                                       dataBuf[dataEvent.bufNum][i++],      // G
-                                       dataBuf[dataEvent.bufNum][i++]));     // B
-    }
+  if(dataReady) {
+    dataReady = false;
     strip.show();
-    delay(20);
-    memset(dataBuf[dataEvent.bufNum], 0, leds * 4);
-  } else {
-    delay(20);
   }
+  delay(20);
 }
 
 // 'N' LL ID RR GG BB
 // 'N' = Numeric message, C = count of led blocks, ID = LedId (0-FF), RRGGBB = RGB 00-FF
 void receiveData(int byteCount) {
   while( Wire.available() ) {
-    dataBuf[bufSelector][writePtr++] = Wire.read();
-    if(writePtr == 1) {
-      if(dataBuf[bufSelector][0] != 'N') {
-         writePtr = 0;
+    uint16_t by = Wire.read();
+    if(bufPos == 0 && by != 'N') {
+      return;
+    } else if(bufPos == 1) {
+      bufLen = by * 4 + 2;
+      if(bufLen > MAX_MESSAGE_SIZE) {
+        bufPos = 0;
+        return;
       }
-    } else if(writePtr >= 2 &&
-              writePtr >= (dataBuf[bufSelector][1] * 4 + 2)) {
-      dataEvent.ready = true;
-      dataEvent.bufNum = bufSelector;
-      bufSelector = (bufSelector + 1) % 2;
-      writePtr = 0;
+    } else if(bufPos >= 2) {
+      if(bufPos % 4 == 2) {
+        curLed = by;
+      } else if(bufPos % 4 == 3) {
+        curR = by;
+      } else if(bufPos % 4 == 0) {
+        curG = by;
+      } else if(bufPos % 4 == 1) {
+        curB = by;
+        strip.setPixelColor(curLed, color(curR, curG, curB));
+      }
     }
+    if(bufPos == bufLen - 1) {
+      dataReady = true;
+      bufPos = 0;
+      return;
+    }
+    if(bufPos >= MAX_MESSAGE_SIZE) {
+      bufPos = 0;
+      return;
+    }
+    bufPos++;
   }
 }
 
@@ -118,14 +110,24 @@ void clearStrip() {
 // Create a 24 bit color value from R,G,B
 uint32_t color(byte r, byte g, byte b) {
   uint32_t c;
-  c = r;
+  c = b;
   c <<= 8;
   c |= g;
   c <<= 8;
-  c |= b;
+  c |= r;
   return c;
 }
 
+//uint32_t color(byte r, byte g, byte b) {
+//  uint32_t c;
+//  c = r;
+//  c <<= 8;
+//  c |= g;
+//  c <<= 8;
+//  c |= b;
+//  return c;
+//}
+//
 /*void printDataBuf() {
   int i;
   int len = dataBuf[dataEvent.bufNum][1] * 4;
