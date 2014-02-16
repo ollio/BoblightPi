@@ -14,7 +14,7 @@ public class LedBufferTest {
 
   @BeforeMethod
   public void setUp() throws Exception {
-    buffer = new LedBuffer();
+    buffer = new LedBuffer(configuration);
   }
 
   @DataProvider

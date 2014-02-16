@@ -13,6 +13,7 @@ import java.util.logging.Logger;
 
 import static java.lang.String.format;
 import static java.lang.Thread.sleep;
+import static java.lang.Thread.yield;
 import static org.apache.commons.lang.math.NumberUtils.toInt;
 
 public class IODeviceI2C extends IODeviceAbstract {
@@ -43,10 +44,17 @@ public class IODeviceI2C extends IODeviceAbstract {
 
   @Override
   protected synchronized void writeBytes(byte[] data) throws Exception {
-//    i2CDevice.write(data, 0, data.length);
-    for (byte b : data) {
-      i2CDevice.write(b);
-      sleep(1);
+    for(int i=1; i<=3; i++) {
+      try {
+        i2CDevice.write(data, 0, data.length);
+        sleep(5);
+        return;
+      } catch (IOException e) {
+        sleep(i * 50);
+        if(i==3) {
+          throw new IOException("Error sending data to I2C after 3 retries: " + e.getMessage());
+        }
+      }
     }
   }
 }

@@ -18,7 +18,7 @@ import static java.lang.Thread.sleep;
 abstract class IODeviceAbstract implements IODevice {
   private final static Logger LOG = Logger.getLogger(IODevice.class.getName());
 
-  private LedBuffer ledBuffer = new LedBuffer();
+  private LedBuffer ledBuffer;
 
   private Queue<Led> messageQueue = new ConcurrentLinkedDeque<>();
   protected final BoblightConfiguration configuration;
@@ -30,6 +30,7 @@ abstract class IODeviceAbstract implements IODevice {
 
   protected IODeviceAbstract(BoblightConfiguration configuration) {
     this.configuration = configuration;
+    this.ledBuffer = new LedBuffer(configuration);
     this.maxBlocks = configuration.getMaxBlocks();
     this.lightOffset = (byte) configuration.getLightOffset();
     refresher.schedule(new SendTask(), 1000, 10);
@@ -80,8 +81,7 @@ abstract class IODeviceAbstract implements IODevice {
         for (int i = 0; i < blocks; i++) {
           buf.put(messageQueue.poll().array());
         }
-
-        LOG.info("queue size: " + messageQueue.size() + " blocks: " + blocks);
+//        LOG.info("queue size: " + messageQueue.size() + " blocks: " + blocks + " len: " + (blocks * 4 + 2));
 //        logData(buf.array());
         try {
           writeBytes(buf.array());

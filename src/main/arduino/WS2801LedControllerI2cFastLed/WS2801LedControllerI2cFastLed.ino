@@ -5,7 +5,7 @@
 #define NUM_LEDS 62
 #define SPI_DATA_PIN 10   // Yellow wire on Adafruit Pixels
 #define SPI_CLOCK_PIN 11  // Green wire on Adafruit Pixels
-#define MAX_MESSAGE_SIZE 512
+#define MAX_MESSAGE_SIZE 256
 #define ACTIVITY_LED 13
 
 CRGB leds[NUM_LEDS];

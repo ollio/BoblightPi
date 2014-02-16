@@ -1,10 +1,20 @@
 package org.bozan.boblight.output.buffer;
 
+import org.bozan.boblight.configuration.BoblightConfiguration;
+
 import java.util.HashMap;
 
 public class LedBuffer {
 
-  static final int TOLERANCE = 10;
+  int tolerance = 2;
+
+  BoblightConfiguration config;
+
+  public LedBuffer(BoblightConfiguration config) {
+    this.config = config;
+
+    this.tolerance = config.getColorTolerance();
+  }
 
   HashMap<Byte, Led> leds = new HashMap<>();
 
@@ -17,9 +27,8 @@ public class LedBuffer {
   }
 
   private boolean differentColor(Led oldLed, Led newLed) {
-    return oldLed.r - TOLERANCE > newLed.r || oldLed.r + TOLERANCE < newLed.r ||
-        oldLed.g - TOLERANCE > newLed.g || oldLed.g + TOLERANCE < newLed.g ||
-        oldLed.b - TOLERANCE > newLed.b || oldLed.b + TOLERANCE < newLed.b;
+    return oldLed.r - tolerance > newLed.r || oldLed.r + tolerance < newLed.r ||
+        oldLed.g - tolerance > newLed.g || oldLed.g + tolerance < newLed.g ||
+        oldLed.b - tolerance > newLed.b || oldLed.b + tolerance < newLed.b;
   }
-
 }

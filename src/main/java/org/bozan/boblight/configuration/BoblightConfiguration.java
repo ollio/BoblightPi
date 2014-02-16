@@ -123,4 +123,8 @@ public class BoblightConfiguration {
   public Map<String, String> getSection(final String sectionName) {
     return getFirst(boblightConfig.get(sectionName), null);
   }
+
+  public int getColorTolerance() {
+    return toInt(getSection("global").get("colorTolerance"), 10);
+  }
 }
