@@ -6,13 +6,9 @@ import java.util.HashMap;
 
 public class LedBuffer {
 
-  int tolerance = 2;
-
-  BoblightConfiguration config;
+  int tolerance = 10;
 
   public LedBuffer(BoblightConfiguration config) {
-    this.config = config;
-
     this.tolerance = config.getColorTolerance();
   }
 
