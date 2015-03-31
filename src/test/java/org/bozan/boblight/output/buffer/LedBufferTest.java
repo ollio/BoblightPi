@@ -34,10 +34,13 @@ public class LedBufferTest {
   }
 
   @Test (dataProvider = "leds")
-  public void colors_update_required(Led l1, Led l2, boolean updateExpecteds) throws Exception {
-    buffer.updateLed(l1);
+  public void colors_update_required(Led oldLed, Led newLed, boolean updateExpected) throws Exception {
+    buffer.updateLed(oldLed);
+    buffer.getUpdatedLeds();
 
-    assertThat(buffer.updateLed(l2)).isEqualTo(updateExpecteds);
+    buffer.updateLed(newLed);
+
+    assertThat(buffer.updatedLeds.contains(newLed)).isEqualTo(updateExpected);
   }
 
   @Test
@@ -46,5 +49,15 @@ public class LedBufferTest {
     buffer.updateLed(White(1));
 
     assertThat(buffer.leds.get((byte)1)).isEqualTo(White(1));
+  }
+
+  @Test
+  public void getUpdatedLeds() throws Exception {
+    buffer.updateLed(Black(1));
+    buffer.updateLed(Black(2));
+    buffer.updateLed(White(2));
+
+    assertThat(buffer.getUpdatedLeds()).hasSize(2).contains(Black(1), White(2));
+    assertThat(buffer.getUpdatedLeds()).isEmpty();
   }
 }

@@ -127,4 +127,8 @@ public class BoblightConfiguration {
   public int getColorTolerance() {
     return toInt(getSection("global").get("colorTolerance"), 10);
   }
+
+  public int getFps() {
+    return toInt(getSection("global").get("fps"), 10);
+  }
 }
