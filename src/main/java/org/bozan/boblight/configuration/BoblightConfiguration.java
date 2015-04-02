@@ -131,4 +131,8 @@ public class BoblightConfiguration {
   public int getFps() {
     return toInt(getSection("global").get("fps"), 10);
   }
+
+  public String getHueBridgeUrl() {
+    return getSection("hue").get("url");
+  }
 }

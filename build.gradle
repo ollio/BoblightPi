@@ -1,9 +1,8 @@
 buildscript {
-    repositories {
-        maven { url "http://oss.sonatype.org/content/groups/public" }
-        mavenLocal()
-        mavenCentral()
-    }
+  repositories {
+    mavenLocal()
+    mavenCentral()
+  }
 }
 
 apply plugin: 'java'
@@ -14,27 +13,30 @@ apply plugin: 'application'
 mainClassName = 'org.bozan.boblight.BoblightPiApp'
 
 jar {
-    baseName = 'BoblightPi'
-    version =  '1.0'
+  baseName = 'BoblightPi'
+  version = '1.0'
 }
 
 repositories {
-    mavenCentral()
-    maven { url "http://repo.spring.io/libs-snapshot" }
+  mavenLocal()
+  mavenCentral()
 }
 
 dependencies {
-    compile('commons-lang:commons-lang:2.6')
-    compile('com.google.guava:guava:15.0')
-    compile('io.netty:netty-all:4.0.14.Final')
-    compile('com.pi4j:pi4j-core:0.0.5')
-    compile files('libs/jssc.jar')
+  compile('commons-lang:commons-lang:2.6')
+  compile('com.google.guava:guava:15.0')
+  compile('io.netty:netty-all:4.0.14.Final')
+  compile('com.pi4j:pi4j-core:0.0.5')
 
-    testCompile('org.testng:testng:5.14.2')
-    testCompile('org.easytesting:fest-assert:1.4')
-    testCompile('org.mockito:mockito-all:1.8.4')
+  compile files('libs/jssc.jar')
+  compile files('libs/huelocalsdk.jar')
+  compile files('libs/huesdkresources.jar')
+
+  testCompile('org.testng:testng:5.14.2')
+  testCompile('org.easytesting:fest-assert:1.4')
+  testCompile('org.mockito:mockito-all:1.8.4')
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '1.10'
+  gradleVersion = '2.0'
 }

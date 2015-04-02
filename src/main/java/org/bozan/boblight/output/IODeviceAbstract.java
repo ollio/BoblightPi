@@ -40,8 +40,6 @@ abstract class IODeviceAbstract implements IODevice {
   void disconnect() throws IOException {
   }
 
-  ;
-
   @Override
   public final void setLight(byte ledId, byte r, byte g, byte b) {
     ledBuffer.updateLed(new Led((byte) (lightOffset + ledId), r, g, b));

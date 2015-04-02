@@ -2,6 +2,7 @@ package org.bozan.boblight.input;
 
 import org.apache.commons.lang.StringUtils;
 import org.bozan.boblight.configuration.BoblightConfiguration;
+import org.bozan.boblight.output.HueRestClient;
 import org.bozan.boblight.output.IODevice;
 import org.bozan.boblight.output.IODeviceFactory;
 
@@ -11,6 +12,8 @@ import java.util.logging.Logger;
 
 import static java.lang.Math.round;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.apache.commons.lang.StringUtils.startsWith;
+import static org.apache.commons.lang.StringUtils.substringAfter;
 import static org.apache.commons.lang.math.NumberUtils.toByte;
 import static org.apache.commons.lang.math.NumberUtils.toDouble;
 import static org.apache.commons.lang.math.NumberUtils.toInt;
@@ -150,16 +153,16 @@ public class BoblightProtocolHandlerImpl implements BoblightProtocolHandler {
 
   final IODeviceFactory ioDeviceFactory;
 
-  IODevice ioDevice = null;
+  IODevice ioDevice;
+  final IODevice hueClient;
 
   public BoblightProtocolHandlerImpl() throws IOException {
     configuration = BoblightConfiguration.getInstance();
-    ioDeviceFactory = new IODeviceFactory();
-    initIoDevice();
-  }
-
-  void initIoDevice() throws IOException {
     LOG.info("Endpoint listening on port: " + configuration.getPort());
+
+    hueClient = new HueRestClient();
+
+    ioDeviceFactory = new IODeviceFactory();
     ioDevice = ioDeviceFactory.getIODevice();
   }
 
@@ -169,7 +172,7 @@ public class BoblightProtocolHandlerImpl implements BoblightProtocolHandler {
       String response = handleMessage(request);
       if(isNotBlank(response)) {
         responseHandler.onResponse(response);
-      };
+      }
     }
   }
 
@@ -210,9 +213,15 @@ public class BoblightProtocolHandlerImpl implements BoblightProtocolHandler {
     return null;
   }
 
-  //set light 62 rgb 0 0.564706 0.996078
   private String setLight(String[] command) {
-    ioDevice.setLight(toByte(command[2]), ftoByte(command[4]), ftoByte(command[5]), ftoByte(command[6]));
+    if(StringUtils.isNumeric(command[2])) {
+      //set light 62 rgb 0 0.564706 0.996078
+      ioDevice.setLight(toByte(command[2]), ftoByte(command[4]), ftoByte(command[5]), ftoByte(command[6]));
+    } else if (startsWith(command[2], "HUE")) {
+      //set light HUE1 rgb 0 0.564706 0.996078
+      hueClient.setLight(toByte(substringAfter(command[2], "HUE")), ftoByte(command[4]), ftoByte(command[5]), ftoByte(command[6]));
+    }
+
     return null;
   }
 
